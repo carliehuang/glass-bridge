@@ -19,6 +19,8 @@ class Cube extends Shape {
         // Arrange the vertices into a square shape in texture space too:
         this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
             14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
+
+        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 }
 
@@ -68,6 +70,7 @@ class Base_Scene extends Scene {
         this.hover = this.swarm = false;
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
+            'sphere' : new defs.Subdivision_Sphere(4),
             'cube': new Cube(),
             'outline': new Cube_Outline(),
             'strip' : new Cube_Single_Strip()
@@ -75,6 +78,8 @@ class Base_Scene extends Scene {
 
         // *** Materials
         this.materials = {
+            sphere: new Material(new defs.Phong_Shader(),
+                {ambient: 1, diffusivity: .6, color: color(1, 1, 1, 1)}),
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
         };
@@ -85,12 +90,13 @@ class Base_Scene extends Scene {
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-
+        
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(5, -10, -30));
+            program_state.set_camera(Mat4.translation(0, -10, -30));
+//             program_state.set_camera(this.initial_camera_location);
         }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);
@@ -144,79 +150,92 @@ export class GlassBridge extends Base_Scene {
         });
     }
 
-    /*
-    draw_box(context, program_state, model_transform, boxIndex) {
-        // TODO:  Helper function for requirement 3 (see hint).
-        //        This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
-        // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
-        const t = this.t = program_state.animation_time / 1000;
-        const max_angle = .05*Math.PI;
-        const back_and_forth = 0.5;
-//         const white = color(1,1,1,1);
-        const blue = hex_color("#1a9ffa");
-        const hotPink = hex_color("#FA4DC9");
-        const boxColor = this.boxColors[boxIndex - 1];
-        let angle = 0;
-        let scale_factor = 1.5;
+
+    draw_bridge(context, program_state, frame_transform, glass_transform, frame_color, num_glasses){
+        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        let scale_factor = 1000;
+        let glass_width = 6;
+        const glass_color = hex_color("#C6F7FF");
+        const tempered_glass_color = hex_color("#824300");
+        
+
+        frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
+        frame_transform = frame_transform.times(Mat4.translation(-10, 0, -1));
 
         
-        if(boxIndex == 1){
-            model_transform = model_transform.times(Mat4.scale(1, scale_factor, 1));
-            if(this.draw_outline){
-                this.shapes.outline.draw(context, program_state, model_transform, this.white, "LINES");
-            }else{
-                    this.shapes.strip.draw(context, program_state, model_transform, this.materials.plastic.override({color:boxColor}, "TRIANGLE_STRIP"));
-            }
-            model_transform = model_transform.times(Mat4.scale(1, 1 / scale_factor, 1));
-        }else{
-            model_transform = model_transform.times(Mat4.translation(0, 2 * scale_factor, 0));
-            //shift the axis of rotation(hinge) to the top left edge of the box underneath. 
-            model_transform = model_transform.times(Mat4.translation(-1, -scale_factor, 0));
 
-            
-            if(this.is_still){
-                model_transform = model_transform.times(Mat4.rotation(max_angle, 0, 0, 1));
-            }else{
-                //modeling periodic motion. f(t) = a + b*sin(w*t)
-                model_transform = model_transform.times(Mat4.rotation(((max_angle / 2) + (max_angle / 2 * Math.sin(2 * Math.PI * back_and_forth * t))), 0, 0, 1));    
-            }
-            
-            model_transform = model_transform.times(Mat4.translation(1, scale_factor, 0));  
-            model_transform = model_transform.times(Mat4.scale(1, scale_factor, 1));  
-        
-            if(this.draw_outline){
-                this.shapes.outline.draw(context, program_state, model_transform, this.white, "LINES");
-            }else{
-                if(boxIndex % 2 == 1){
-                    this.shapes.strip.draw(context, program_state, model_transform, this.materials.plastic.override({color:boxColor}), "TRIANGLE_STRIP");
-                }else{
-                    this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color:boxColor})); 
-                }
-            }
-            model_transform = model_transform.times(Mat4.scale(1, 1 / scale_factor, 1));  
-                
+        this.shapes.cube.draw(context, program_state, frame_transform, this.materials.plastic.override({color:frame_color}));
+        this.shapes.cube.draw(context, program_state, frame_transform.times(Mat4.translation(2 + glass_width, 0, 0)), this.materials.plastic.override({color:frame_color}));
+
+        frame_transform = Mat4.identity();
+        frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
+        frame_transform = frame_transform.times(Mat4.translation(10, 0, -1));
+
+        this.shapes.cube.draw(context, program_state, frame_transform, this.materials.plastic.override({color:frame_color}));
+        this.shapes.cube.draw(context, program_state, frame_transform.times(Mat4.translation(-(2 + glass_width), 0, 0)), this.materials.plastic.override({color:frame_color}));
+
+        glass_transform = glass_transform.times(Mat4.translation(-glass_width, 0 , 0));
+        glass_transform = glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
+        glass_transform = glass_transform.times(Mat4.translation(0, 0, -1));
+
+        let deco_transform = Mat4.identity();
+        deco_transform = deco_transform.times(Mat4.translation(-12, 0, -3));
+        let period = 2;
+        const color_change = (1 + Math.sin(Math.PI / period * t)) / 2;
+        let deco_color = color(1, color_change, color_change, 1);
+
+        //left bridge 
+        for(let i = 0; i < num_glasses; i++){
+            this.shapes.cube.draw(context, program_state, glass_transform, this.materials.plastic.override({color:glass_color}));
+            this.shapes.sphere.draw(context, program_state, deco_transform, this.materials.sphere.override({color: deco_color}));
+            glass_transform = glass_transform.times(Mat4.translation(0, 0, -3));
+            deco_transform = deco_transform.times(Mat4.translation(0, 0, -9));
+//             if(i % 2 == 0){
+//                 this.draw_glass(context, program_state, model_transform);
+//             }
         }
-        return model_transform;
-    }
-    */
 
-    draw_bridge_frame(context, program_state, model_transform, frame_color){
-        this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color:frame_color}));
+        //right bridge 
+        glass_transform = Mat4.identity();
+        deco_transform = Mat4.identity();
+        deco_transform = deco_transform.times(Mat4.translation(12, 0, -3));
+
+        glass_transform = glass_transform.times(Mat4.translation(glass_width, 0 , 0));
+        glass_transform = glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
+        glass_transform = glass_transform.times(Mat4.translation(0, 0, -1));
+        for(let i = 0; i < num_glasses; i++){
+            this.shapes.cube.draw(context, program_state, glass_transform, this.materials.plastic.override({color:glass_color}));
+            this.shapes.sphere.draw(context, program_state, deco_transform, this.materials.sphere.override({color: deco_color}));
+            glass_transform = glass_transform.times(Mat4.translation(0, 0, -3));
+            deco_transform = deco_transform.times(Mat4.translation(0, 0, -9));
+//             if(i % 2 == 0){
+//                 this.draw_glass(context, program_state, model_transform);
+//             }
+        }
+
+        //draw decorations
+
+
+
+        
+
+
     }
 
     display(context, program_state) {
         super.display(context, program_state);
-        const bridge_frame_color = hex_color("#FA69FF");
+        const bridge_frame_color = hex_color("#F700FF");
+
         const blue = hex_color("#1a9ffa");
+        let num_glasses = 30;
 
-        let model_transform = Mat4.identity();
-        // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
+        let frame_transform = Mat4.identity();
+        let glass_transform = Mat4.identity();
 
+        //program_state.set_camera(this.initial_camera_location);
+
+        this.draw_bridge(context, program_state, frame_transform, glass_transform, bridge_frame_color, num_glasses);
         
-        this.draw_bridge_frame(context, program_state, model_transform, bridge_frame_color);
-
-        for(let i = 1; i <= 8; i++){
-//             model_transform = this.draw_box(context, program_state, model_transform, i);
-        }
+        
     }
 }
