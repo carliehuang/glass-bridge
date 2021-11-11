@@ -81,7 +81,7 @@ class Base_Scene extends Scene {
             sphere: new Material(new defs.Phong_Shader(),
                 {ambient: 1, diffusivity: .6, color: color(1, 1, 1, 1)}),
             plastic: new Material(new defs.Phong_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+                {ambient: .4, diffusivity: 1, color: hex_color("#ffffff")}),
         };
         // The white material and basic shader are used for drawing the outline.
         this.white = new Material(new defs.Basic_Shader());
