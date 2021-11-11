@@ -85,6 +85,8 @@ class Base_Scene extends Scene {
         };
         // The white material and basic shader are used for drawing the outline.
         this.white = new Material(new defs.Basic_Shader());
+        this.random_number = Math.floor(Math.random() * 1000);
+//         this.random_number2 = Math.floor(Math.random() * 10);
     }
 
     display(context, program_state) {
@@ -151,19 +153,17 @@ export class GlassBridge extends Base_Scene {
     }
 
 
-    draw_bridge(context, program_state, frame_transform, glass_transform, frame_color, num_glasses){
+    draw_bridge(context, program_state, frame_transform, frame_color, num_glasses){
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         let scale_factor = 1000;
         let glass_width = 6;
         const glass_color = hex_color("#C6F7FF");
-        const tempered_glass_color = hex_color("#824300");
+        const tempered_glass_color = hex_color("#60A8C1");
         
-
+        
         frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
         frame_transform = frame_transform.times(Mat4.translation(-10, 0, -1));
-
         
-
         this.shapes.cube.draw(context, program_state, frame_transform, this.materials.plastic.override({color:frame_color}));
         this.shapes.cube.draw(context, program_state, frame_transform.times(Mat4.translation(2 + glass_width, 0, 0)), this.materials.plastic.override({color:frame_color}));
 
@@ -174,52 +174,43 @@ export class GlassBridge extends Base_Scene {
         this.shapes.cube.draw(context, program_state, frame_transform, this.materials.plastic.override({color:frame_color}));
         this.shapes.cube.draw(context, program_state, frame_transform.times(Mat4.translation(-(2 + glass_width), 0, 0)), this.materials.plastic.override({color:frame_color}));
 
-        glass_transform = glass_transform.times(Mat4.translation(-glass_width, 0 , 0));
-        glass_transform = glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
-        glass_transform = glass_transform.times(Mat4.translation(0, 0, -1));
+        let left_glass_transform = Mat4.identity();
+        let right_glass_transform = Mat4.identity();
 
-        let deco_transform = Mat4.identity();
-        deco_transform = deco_transform.times(Mat4.translation(-12, 0, -3));
+        left_glass_transform = left_glass_transform.times(Mat4.translation(-glass_width, 0 , 0));
+        left_glass_transform = left_glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
+        left_glass_transform = left_glass_transform.times(Mat4.translation(0, 0, -1));
+
+        right_glass_transform = right_glass_transform.times(Mat4.translation(glass_width, 0 , 0));
+        right_glass_transform = right_glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
+        right_glass_transform = right_glass_transform.times(Mat4.translation(0, 0, -1));
+
+        let left_deco_transform = Mat4.identity();
+        let right_deco_transform = Mat4.identity();
+        left_deco_transform = left_deco_transform.times(Mat4.translation(-12, 0, -3));
+        right_deco_transform = right_deco_transform.times(Mat4.translation(12, 0, -3));
         let period = 2;
         const color_change = (1 + Math.sin(Math.PI / period * t)) / 2;
-        let deco_color = color(1, color_change, color_change, 1);
-
-        //left bridge 
+        let deco_color = color(0.7, color_change, color_change, 1);
+ 
+ 
+        //draw glass and decorations
         for(let i = 0; i < num_glasses; i++){
-            this.shapes.cube.draw(context, program_state, glass_transform, this.materials.plastic.override({color:glass_color}));
-            this.shapes.sphere.draw(context, program_state, deco_transform, this.materials.sphere.override({color: deco_color}));
-            glass_transform = glass_transform.times(Mat4.translation(0, 0, -3));
-            deco_transform = deco_transform.times(Mat4.translation(0, 0, -9));
-//             if(i % 2 == 0){
-//                 this.draw_glass(context, program_state, model_transform);
-//             }
+            if((this.random_number * i) % (i + 1) == 0){
+                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:tempered_glass_color}));
+                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:glass_color}));
+            }else{
+                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:glass_color}));
+                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:tempered_glass_color}));
+            }
+            
+            this.shapes.sphere.draw(context, program_state, left_deco_transform, this.materials.sphere.override({color: deco_color}));
+            this.shapes.sphere.draw(context, program_state, right_deco_transform, this.materials.sphere.override({color: deco_color}));
+            left_glass_transform = left_glass_transform.times(Mat4.translation(0, 0, -3));
+            right_glass_transform = right_glass_transform.times(Mat4.translation(0, 0, -3));
+            left_deco_transform = left_deco_transform.times(Mat4.translation(0, 0, -9));
+            right_deco_transform = right_deco_transform.times(Mat4.translation(0, 0, -9));
         }
-
-        //right bridge 
-        glass_transform = Mat4.identity();
-        deco_transform = Mat4.identity();
-        deco_transform = deco_transform.times(Mat4.translation(12, 0, -3));
-
-        glass_transform = glass_transform.times(Mat4.translation(glass_width, 0 , 0));
-        glass_transform = glass_transform.times(Mat4.scale(glass_width / 2, 1, glass_width / 2));
-        glass_transform = glass_transform.times(Mat4.translation(0, 0, -1));
-        for(let i = 0; i < num_glasses; i++){
-            this.shapes.cube.draw(context, program_state, glass_transform, this.materials.plastic.override({color:glass_color}));
-            this.shapes.sphere.draw(context, program_state, deco_transform, this.materials.sphere.override({color: deco_color}));
-            glass_transform = glass_transform.times(Mat4.translation(0, 0, -3));
-            deco_transform = deco_transform.times(Mat4.translation(0, 0, -9));
-//             if(i % 2 == 0){
-//                 this.draw_glass(context, program_state, model_transform);
-//             }
-        }
-
-        //draw decorations
-
-
-
-        
-
-
     }
 
     display(context, program_state) {
@@ -227,14 +218,13 @@ export class GlassBridge extends Base_Scene {
         const bridge_frame_color = hex_color("#F700FF");
 
         const blue = hex_color("#1a9ffa");
-        let num_glasses = 30;
+        let num_glasses = 100;
 
         let frame_transform = Mat4.identity();
-        let glass_transform = Mat4.identity();
 
         //program_state.set_camera(this.initial_camera_location);
 
-        this.draw_bridge(context, program_state, frame_transform, glass_transform, bridge_frame_color, num_glasses);
+        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, num_glasses);
         
         
     }
