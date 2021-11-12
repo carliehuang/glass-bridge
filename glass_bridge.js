@@ -147,6 +147,7 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, -6));
             this.lastmotion = "left";
         }
+        this.stepstaken += 1;
     }
 
     go_right(){
@@ -165,6 +166,7 @@ export class GlassBridge extends Base_Scene {
         else{
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
+        this.stepstaken += 1;
     }
 
     make_control_panel() {
@@ -174,6 +176,9 @@ export class GlassBridge extends Base_Scene {
         this.new_line();
 
         this.live_string(life => life.textContent = "lives: " + this.lives);
+        this.new_line();
+
+        this.live_string(steps => steps.textContent = "steps: " + this.stepstaken);
 
         /*
         this.key_triggered_button("Outline", ["o"], () => {
