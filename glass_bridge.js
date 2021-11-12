@@ -1,4 +1,5 @@
 import {defs, tiny} from './examples/common.js';
+import {widgets} from '../tiny-graphics-widgets.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -85,7 +86,7 @@ class Base_Scene extends Scene {
         };
         // The white material and basic shader are used for drawing the outline.
         this.white = new Material(new defs.Basic_Shader());
-        this.random_number = Math.floor(Math.random() * 1000);
+        
 //         this.random_number2 = Math.floor(Math.random() * 10);
     }
 
@@ -125,6 +126,8 @@ export class GlassBridge extends Base_Scene {
         this.lastmotion = "none";
         this.stepstaken = 0;
         this.ball_transform = Mat4.identity().times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
+        this.random_number = Math.floor(Math.random() * 1000);
+        this.lives = 10;
     }
 
     go_left() {
@@ -168,6 +171,10 @@ export class GlassBridge extends Base_Scene {
         // Left and right movement
         this.key_triggered_button("Go left", ["n"], this.go_left);
         this.key_triggered_button("Go right", ["m"], this.go_right);
+        this.new_line();
+
+        this.live_string(life => life.textContent = "lives: " + this.lives);
+
         /*
         this.key_triggered_button("Outline", ["o"], () => {
             // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
