@@ -121,21 +121,47 @@ export class GlassBridge extends Base_Scene {
         this.go_left();
         this.go_right();
         this.boxColors;
-        this.draw_outline = false;
-        this.is_still = false;
-        this.start = false;
         this.inmotion = false;
         this.lastmotion = "none";
         this.stepstaken = 0;
-        this.ball_transform = Mat4.identity();
+        this.ball_transform = Mat4.identity().times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
     }
 
     go_left() {
         this.inmotion = true;
+        if(!this.ball_transform){
+            return;
+        }
+        if(this.lastmotion == "none"){
+            this.ball_transform = this.ball_transform.times(Mat4.translation(-3.5, 0, -4));
+            this.lastmotion = "left";
+        }
+        else if(this.lastmotion == "left"){
+            console.log("in left");
+            this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
+        }
+        else{
+            this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, -6));
+            this.lastmotion = "left";
+        }
     }
 
     go_right(){
         this.inmotion = true;
+        if(!this.ball_transform){
+            return;
+        }
+        if(this.lastmotion == "none"){
+            this.ball_transform = this.ball_transform.times(Mat4.translation(3.5, 0, -4));
+            this.lastmotion = "right";
+        }
+        else if(this.lastmotion == "left"){
+            this.ball_transform = this.ball_transform.times(Mat4.translation(7, 0, -6));
+            this.lastmotion = "right";
+        }
+        else{
+            this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
+        }
     }
 
     make_control_panel() {
@@ -227,14 +253,9 @@ export class GlassBridge extends Base_Scene {
         //program_state.set_camera(this.initial_camera_location);
 
         this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, num_glasses);
-        if(!this.start){
-            let platform_transform = Mat4.identity();
-            platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
-            this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
-        }
-        this.ball_transform = Mat4.identity();
-        this.ball_transform = this.ball_transform.times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
+        let platform_transform = Mat4.identity();
+        platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
+        this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
         this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
-        
     }
 }
