@@ -118,30 +118,31 @@ export class GlassBridge extends Base_Scene {
      */
     constructor(){
         super();
-        this.set_colors();
+        this.go_left();
+        this.go_right();
         this.boxColors;
         this.draw_outline = false;
         this.is_still = false;
+        this.start = false;
+        this.inmotion = false;
+        this.lastmotion = "none";
+        this.stepstaken = 0;
+        this.ball_transform = Mat4.identity();
     }
 
-    set_colors() {
-        // TODO:  Create a class member variable to store your cube's colors.
-        // Hint:  You might need to create a member variable at somewhere to store the colors, using `this`.
-        // Hint2: You can consider add a constructor for class Assignment2, or add member variables in Base_Scene's constructor.
-        this.boxColors = [color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0),
-                          color(Math.random(), Math.random(), Math.random(), 1.0)];
+    go_left() {
+        this.inmotion = true;
+    }
+
+    go_right(){
+        this.inmotion = true;
     }
 
     make_control_panel() {
-        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Change Colors", ["c"], this.set_colors);
-        // Add a button for controlling the scene.
+        // Left and right movement
+        this.key_triggered_button("Go left", ["n"], this.go_left);
+        this.key_triggered_button("Go right", ["m"], this.go_right);
+        /*
         this.key_triggered_button("Outline", ["o"], () => {
             // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
             this.draw_outline = !(this.draw_outline);
@@ -150,6 +151,7 @@ export class GlassBridge extends Base_Scene {
             // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
             this.is_still = !(this.is_still)
         });
+        */
     }
 
 
@@ -225,7 +227,14 @@ export class GlassBridge extends Base_Scene {
         //program_state.set_camera(this.initial_camera_location);
 
         this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, num_glasses);
-        
+        if(!this.start){
+            let platform_transform = Mat4.identity();
+            platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
+            this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
+        }
+        this.ball_transform = Mat4.identity();
+        this.ball_transform = this.ball_transform.times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
+        this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
         
     }
 }
