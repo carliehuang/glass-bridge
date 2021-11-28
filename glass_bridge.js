@@ -125,9 +125,11 @@ export class GlassBridge extends Base_Scene {
         this.inmotion = false;
         this.lastmotion = "none";
         this.stepstaken = 0;
+        this.num_glasses = 100;
         this.ball_transform = Mat4.identity().times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
-        this.random_number = Math.floor(Math.random() * 1000);
+        this.random_number = Number((Math.random() * Math.pow(10, this.num_glasses)));
         this.lives = 10;
+        console.log("this.random_number : " + this.random_number);
     }
 
     go_left() {
@@ -193,13 +195,13 @@ export class GlassBridge extends Base_Scene {
     }
 
 
-    draw_bridge(context, program_state, frame_transform, frame_color, num_glasses){
+    draw_bridge(context, program_state, frame_transform, frame_color){
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         let scale_factor = 1000;
         let glass_width = 6;
         const glass_color = hex_color("#C6F7FF", 0.8);
         const tempered_glass_color = hex_color("#60A8C1", 0.8);
-        
+        const arrived_checkPoint = false;
         
         frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
         frame_transform = frame_transform.times(Mat4.translation(-10, 0, -1));
@@ -235,8 +237,11 @@ export class GlassBridge extends Base_Scene {
  
  
         //draw glass and decorations
-        for(let i = 0; i < num_glasses; i++){
-            if((this.random_number * i) % (i + 1) == 0){
+        for(let i = 0; i < this.num_glasses; i++){
+            let ith_digit_char = String(this.random_number).charAt((i + 2) % 16);
+            let ith_digit_int = Number(ith_digit_char);
+//             console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
+            if(ith_digit_int % 2 == 0){
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:tempered_glass_color}));
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:glass_color}));
             }else{
@@ -258,13 +263,13 @@ export class GlassBridge extends Base_Scene {
         const bridge_frame_color = hex_color("#F700FF");
 
         const blue = hex_color("#1a9ffa");
-        let num_glasses = 100;
+//         let num_glasses = 100;
 
         let frame_transform = Mat4.identity();
 
         //program_state.set_camera(this.initial_camera_location);
 
-        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, num_glasses);
+        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color);
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
         this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
