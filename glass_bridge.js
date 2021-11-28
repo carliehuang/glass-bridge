@@ -197,8 +197,8 @@ export class GlassBridge extends Base_Scene {
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         let scale_factor = 1000;
         let glass_width = 6;
-        const glass_color = hex_color("#C6F7FF");
-        const tempered_glass_color = hex_color("#60A8C1");
+        const glass_color = hex_color("#C6F7FF", 0.8);
+        const tempered_glass_color = hex_color("#60A8C1", 0.8);
         
         
         frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
