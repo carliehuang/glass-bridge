@@ -129,7 +129,13 @@ export class GlassBridge extends Base_Scene {
         this.ball_transform = Mat4.identity().times(Mat4.translation(0, 2.5, 6)).times(Mat4.scale(1.5, 1.5, 1.5));
         this.random_number = Number((Math.random() * Math.pow(10, this.num_glasses)));
         this.lives = 10;
-        console.log("this.random_number : " + this.random_number);
+        this.checkpoint = 10;
+//         this.glass_color = hex_color("#C6F7FF", 0.8);
+//         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
+        this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
+        this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
+
+//         console.log("this.random_number : " + this.random_number);
     }
 
     go_left() {
@@ -199,8 +205,8 @@ export class GlassBridge extends Base_Scene {
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         let scale_factor = 1000;
         let glass_width = 6;
-        const glass_color = hex_color("#C6F7FF", 0.8);
-        const tempered_glass_color = hex_color("#60A8C1", 0.8);
+//         const glass_color = hex_color("#C6F7FF", 0.8);
+//         const tempered_glass_color = hex_color("#60A8C1", 0.8);
         const arrived_checkPoint = false;
         
         frame_transform = frame_transform.times(Mat4.scale(1, 1, scale_factor));
@@ -234,19 +240,24 @@ export class GlassBridge extends Base_Scene {
         let period = 2;
         const color_change = (1 + Math.sin(Math.PI / period * t)) / 2;
         let deco_color = color(0.7, color_change, color_change, 1);
- 
+        let color_index = 0;
  
         //draw glass and decorations
         for(let i = 0; i < this.num_glasses; i++){
             let ith_digit_char = String(this.random_number).charAt((i + 2) % 16);
             let ith_digit_int = Number(ith_digit_char);
-//             console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
+            if(i != 0 && i % this.checkpoint == 0){
+//                 console.log("i : " + i + ", this.checkpoint : " + this.checkpoint);
+                color_index++;
+                this.change_glass_color();
+            }
+            console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
             if(ith_digit_int % 2 == 0){
-                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:tempered_glass_color}));
-                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:glass_color}));
+                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
+                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
             }else{
-                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:glass_color}));
-                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:tempered_glass_color}));
+                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
+                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
             
             this.shapes.sphere.draw(context, program_state, left_deco_transform, this.materials.sphere.override({color: deco_color}));
@@ -256,6 +267,12 @@ export class GlassBridge extends Base_Scene {
             left_deco_transform = left_deco_transform.times(Mat4.translation(0, 0, -9));
             right_deco_transform = right_deco_transform.times(Mat4.translation(0, 0, -9));
         }
+    }
+
+    change_glass_color(){
+        this.glass_color_list.push(color(Math.random(), Math.random(), Math.random(), 0.8));
+        this.tempered_glass_color_list.push(color(Math.random(),Math.random(),Math.random(),0.8));
+//         this.glass_color = color(1, 0, 0, 1);
     }
 
     display(context, program_state) {
