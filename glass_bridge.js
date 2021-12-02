@@ -246,7 +246,7 @@ export class GlassBridge extends Base_Scene {
         }
         this.inmotion = true;
         if(this.lastmotion == "none"){
-            this.ball_transform = this.ball_transform.times(Mat4.translation(-3.5, 0, -4));
+            this.ball_transform = this.ball_transform.times(Mat4.translation(-3.5, 0, -5));
             this.lastmotion = "left";
         }
         else if(this.lastmotion == "left"){
@@ -270,7 +270,7 @@ export class GlassBridge extends Base_Scene {
         }
         this.inmotion = true;
         if(this.lastmotion == "none"){
-            this.ball_transform = this.ball_transform.times(Mat4.translation(3.5, 0, -4));
+            this.ball_transform = this.ball_transform.times(Mat4.translation(3.5, 0, -5));
             this.lastmotion = "right";
         }
         else if(this.lastmotion == "left"){
