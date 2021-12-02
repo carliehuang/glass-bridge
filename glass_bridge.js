@@ -107,7 +107,7 @@ class Base_Scene extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(0, -15, -30));
+            program_state.set_camera(Mat4.translation(0, -8, -40).times(Mat4.rotation(44.75, 1,0,0)));
 //             program_state.set_camera(this.initial_camera_location);
         }
         program_state.projection_transform = Mat4.perspective(
@@ -162,8 +162,7 @@ export class GlassBridge extends Base_Scene {
     // z = z pos of front end of panel
     // side = -1 for left, 1 for right
         
-        console.log(z, side);
-        t *= 0.5;
+        t *= 0.1;
         let frag1 = (Mat4.translation(-t*this.randArr[0], -(t**2), t*this.randArr[1]))
             .times(Mat4.translation(side*8, 0, z-1))
             .times(Mat4.rotation(t, -1, 1, -1))
@@ -351,18 +350,20 @@ export class GlassBridge extends Base_Scene {
 
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
                 
-                if(this.ballPos[i] == null || this.ballPos[i] != 1) {
+                if(/*this.ballPos[i] == null ||*/ this.ballPos[i] != 1) {
                     this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
-                    this.shatter(this.stepstaken*9+1, 1, context, program_state, t);
+                    console.log("here right ", i)
+                    this.shatter(-((this.stepstaken-1)*9-1), 1, context, program_state, t);
                 }
 
             }else { // reg. glass on left
 
-                if(this.ballPos[i] == null || this.ballPos[i] != -1) {
+                if(/*this.ballPos[i] == null ||*/ this.ballPos[i] != -1) {
                     this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
-                    this.shatter(/*(this.stepstaken-1)*9+1*/0, -1, context, program_state, t);
+                    console.log("here left ", i)
+                    this.shatter(-((this.stepstaken-1)*9-1), -1, context, program_state, t);
                 }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
