@@ -63,6 +63,10 @@ class Cube_Single_Strip extends Shape {
     }
 }
 
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+  
 
 class Base_Scene extends Scene {
     /**
@@ -140,6 +144,12 @@ export class GlassBridge extends Base_Scene {
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
+        this.randArray = []
+
+        for (let i = 0; i < 18; i++) {
+            let num = getRandomArbitrary(.5, 3);
+            this.randArray.push(num);
+        }
 
 //         console.log("this.random_number : " + this.random_number);
     }
