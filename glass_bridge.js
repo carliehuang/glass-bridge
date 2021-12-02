@@ -146,12 +146,48 @@ export class GlassBridge extends Base_Scene {
 
     shatter(z, side, context, program_state, t) {
         let frag1 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-1))
-            .times(Mat4.translation(-1, -1, 1))
+            //.times(Mat4.translation(-1, -1, 1))
             .times(Mat4.rotation(t, -1, -1, -1))
-            .times(Mat4.translation(1, 1, -1))
+            //.times(Mat4.translation(1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
         
+        let frag5 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-4))
+            //.times(Mat4.translation(-1, -1, 1))
+            //.times(Mat4.rotation(t, 1, 1, -1))
+            //.times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag6 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-4))
+            //.times(Mat4.translation(-1, -1, 1))
+            .times(Mat4.rotation(t, 0, 0, 1))
+            //.times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag7 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-6))
+            //.times(Mat4.translation(-1, -1, 1))
+            .times(Mat4.rotation(t, 1, 1, -1))
+            //.times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+        
+        let frag8 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-6))
+            //.times(Mat4.translation(-1, -1, 1))
+            .times(Mat4.rotation(t, 1, 0, 0))
+            //.times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag9 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-6))
+            //.times(Mat4.translation(-1, -1, 1))
+            .times(Mat4.rotation(t, 1, 1, 1))
+            //.times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+
         this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic);
+
     }
 
     go_left() {
@@ -303,7 +339,7 @@ export class GlassBridge extends Base_Scene {
 
         //program_state.set_camera(this.initial_camera_location);
 
-        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color);
+        //this.draw_bridge(context, program_state, frame_transform, bridge_frame_color);
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
         //this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
