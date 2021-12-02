@@ -157,14 +157,40 @@ export class GlassBridge extends Base_Scene {
             .times(Mat4.rotation(t, -1, -1, 1))
             .times(Mat4.scale(1, 1, 1));
 
-         let frag4 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-3))
+        let frag4 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, -1))
+            .times(Mat4.scale(1, 1, 1));
+      
+        let frag5 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-4))
+            //.times(Mat4.rotation(t, 1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag6 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-4))
+            .times(Mat4.rotation(t, 0, 0, 1))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag7 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-6))
+            .times(Mat4.rotation(t, 1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+        
+        let frag8 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-6))
+            .times(Mat4.rotation(t, 1, 0, 0))
+            .times(Mat4.scale(1, 1, 1));
+
+        let frag9 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-6))
+            .times(Mat4.rotation(t, 1, 1, 1))
             .times(Mat4.scale(1, 1, 1));
             
         this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag4, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic);
+            
     }
 
     go_left() {
