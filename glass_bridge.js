@@ -107,7 +107,7 @@ class Base_Scene extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(0, -10, -30));
+            program_state.set_camera(Mat4.translation(0, -15, -30));
 //             program_state.set_camera(this.initial_camera_location);
         }
         program_state.projection_transform = Mat4.perspective(
@@ -120,12 +120,6 @@ class Base_Scene extends Scene {
 }
 
 export class GlassBridge extends Base_Scene {
-    /**
-     * This Scene object can be added to any display canvas.
-     * We isolate that code so it can be experimented with on its own.
-     * This gives you a very small code sandbox for editing a simple scene, and for
-     * experimenting with matrix transformations.
-     */
 
     constructor(){
         super();
@@ -144,63 +138,86 @@ export class GlassBridge extends Base_Scene {
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
+        
 
-        this.randArray = []
+        this.ballPos = []; // keeps track of ith jump: -1 if left, 1 if right, 0 if not jumped yet
 
+        // Random number generation
+        this.randArr = [];
         for (let i = 0; i < 18; i++) {
-            let num = getRandomArbitrary(.5, 3);
-            this.randArray.push(num);
+            this.randArr.push(getRandomArbitrary(.3, 2));
         }
 
-//         console.log("this.random_number : " + this.random_number);
+        this.randSign = [];
+        for (let i = 0; i < 8; i++) {
+            this.randSign.push(Math.random() < 0.5 ? -1 : 1);
+        }
+        this.rand1 = Math.random();
+        this.rand2 = Math.random();
+        this.rand3 = Math.random();
+
     }
 
     shatter(z, side, context, program_state, t) {
-        let frag1 = (Mat4.translation(-t/this.randArray[1], -(t**2), t/this.randArray[2])).times(Mat4.translation(side*8, 0, z-1))
+    // z = z pos of front end of panel
+    // side = -1 for left, 1 for right
+        
+        console.log(z, side);
+        t *= 0.5;
+        let frag1 = (Mat4.translation(-t*this.randArr[0], -(t**2), t*this.randArr[1]))
+            .times(Mat4.translation(side*8, 0, z-1))
             .times(Mat4.rotation(t, -1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag2 = (Mat4.translation(t/(this.randArray[3]-1.75), -(t**2), t/this.randArray[4])).times(Mat4.translation(side*6, 0, z-1))
+        let frag2 = (Mat4.translation(this.randArr[2]*this.randSign[0], -(t**2), t*this.randArr[3]))
+            .times(Mat4.translation(side*6, 0, z-1))
             .times(Mat4.rotation(t, -1, 0, 0))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag3 = (Mat4.translation(t/this.randArray[5], -(t**2), t/this.randArray[6])).times(Mat4.translation(side*4, 0, z-1))
+        let frag3 = (Mat4.translation(t*this.randArr[4], -(t**2), t*this.randArr[5]))
+            .times(Mat4.translation(side*4, 0, z-1))
             .times(Mat4.rotation(t, -1, -1, 1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag4 = (Mat4.translation(-t/this.randArray[7], -(t**2), t/(this.randArray[8]-1.75))).times(Mat4.translation(side*8, 0, z-3))
+        let frag4 = (Mat4.translation(-t*this.randArr[6], -(t**2), this.randArr[7]*this.randSign[1]))
+            .times(Mat4.translation(side*8, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, -1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag5 = (Mat4.translation(t/(this.randArray[9]-1.75), -(t**2), t/(this.randArray[10]-1.75))).times(Mat4.translation(side*6, 0, z-3))
+        let frag5 = (Mat4.translation(this.randArr[8]*this.randSign[2], -(t**2), this.randArr[9]*this.randSign[3]))
+            .times(Mat4.translation(side*6, 0, z-3))
             .times(Mat4.rotation(t, this.rand1, this.rand2, this.rand3))
             .times(Mat4.scale(1, 1, 1))
 
-        let frag6 = (Mat4.translation(t/this.randArray[11], -(t**2), t/(this.randArray[12]-1.75))).times(Mat4.translation(side*4, 0, z-3))
+        let frag6 = (Mat4.translation(t*this.randArr[10], -(t**2), this.randArr[11]*this.randSign[4]))
+            .times(Mat4.translation(side*4, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, 1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag7 = (Mat4.translation(-t/this.randArray[13], -(t**2), -t/this.randArray[14])).times(Mat4.translation(side*8, 0, z-5))
+        let frag7 = (Mat4.translation(-t*this.randArr[12], -(t**2), -t*this.randArr[13]))
+            .times(Mat4.translation(side*8, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, -1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag8 = (Mat4.translation(t/(this.randArray[15]-1.75), -(t**2), -t/this.randArray[16])).times(Mat4.translation(side*6, 0, z-5))
+        let frag8 = (Mat4.translation(this.randArr[14]*this.randSign[5], -(t**2), -t*this.randArr[15]))
+            .times(Mat4.translation(side*6, 0, z-5))
             .times(Mat4.rotation(t, 1, 0, 0))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag9 = (Mat4.translation(t/this.randArray[17], -(t**2), -t/this.randArray[18])).times(Mat4.translation(side*4, 0, z-5))
+        let frag9 = (Mat4.translation(t*this.randArr[16], -(t**2), -t*this.randArr[17]))
+            .times(Mat4.translation(side*4, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, 1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-            
+        
         this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic);
@@ -210,7 +227,7 @@ export class GlassBridge extends Base_Scene {
         this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic);
-            
+         
     }
 
     go_left() {
@@ -231,6 +248,7 @@ export class GlassBridge extends Base_Scene {
             this.lastmotion = "left";
         }
         this.stepstaken += 1;
+        this.ballPos.push(-1);
     }
 
     go_right(){
@@ -250,6 +268,7 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
         this.stepstaken += 1;
+        this.ballPos.push(1);
     }
 
     make_control_panel() {
@@ -262,6 +281,7 @@ export class GlassBridge extends Base_Scene {
         this.new_line();
 
         this.live_string(steps => steps.textContent = "steps: " + this.stepstaken);
+
 
         /*
         this.key_triggered_button("Outline", ["o"], () => {
@@ -276,8 +296,8 @@ export class GlassBridge extends Base_Scene {
     }
 
 
-    draw_bridge(context, program_state, frame_transform, frame_color){
-        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+    draw_bridge(context, program_state, frame_transform, frame_color, t){
+        
         let scale_factor = 1000;
         let glass_width = 6;
 //         const glass_color = hex_color("#C6F7FF", 0.8);
@@ -326,12 +346,24 @@ export class GlassBridge extends Base_Scene {
                 color_index++;
                 this.change_glass_color();
             }
-            console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
-            if(ith_digit_int % 2 == 0){
+            //console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
+            if(ith_digit_int % 2 == 0) { // reg. glass on right
+
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
-                this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
-            }else{
-                this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
+                
+                if(this.ballPos[i] == null || this.ballPos[i] != 1) {
+                    this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
+                } else {
+                    this.shatter(this.stepstaken*9+1, 1, context, program_state, t);
+                }
+
+            }else { // reg. glass on left
+
+                if(this.ballPos[i] == null || this.ballPos[i] != -1) {
+                    this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
+                } else {
+                    this.shatter(/*(this.stepstaken-1)*9+1*/0, -1, context, program_state, t);
+                }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
             
@@ -351,7 +383,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     display(context, program_state) {
-        const t = program_state.animation_time/1000
+        const t = program_state.animation_time/1000;
         super.display(context, program_state);
         const bridge_frame_color = hex_color("#F700FF");
 
@@ -362,12 +394,16 @@ export class GlassBridge extends Base_Scene {
 
         //program_state.set_camera(this.initial_camera_location);
 
-        //this.draw_bridge(context, program_state, frame_transform, bridge_frame_color);
+        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, t);
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
-        //this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
-        //this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
+        this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
+        this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
-        this.shatter(0, -1, context, program_state, t);
+        
+      
+        //this.shatter(0, -1, context, program_state, t);
+        
     }
+
 }
