@@ -63,6 +63,10 @@ class Cube_Single_Strip extends Shape {
     }
 }
 
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+  
 
 class Base_Scene extends Scene {
     /**
@@ -140,47 +144,62 @@ export class GlassBridge extends Base_Scene {
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
-        
-        this.randArr = []
+
+        this.randArray = []
+
+        for (let i = 0; i < 18; i++) {
+            let num = getRandomArbitrary(.5, 3);
+            this.randArray.push(num);
+        }
+
 //         console.log("this.random_number : " + this.random_number);
     }
 
     shatter(z, side, context, program_state, t) {
-        let frag1 = (Mat4.translation(-t/2,-(t**2), t2)).times(Mat4.translation(side*8, 0, z-1))
+        let frag1 = (Mat4.translation(-t/this.randArray[1], -(t**2), t/this.randArray[2])).times(Mat4.translation(side*8, 0, z-1))
             .times(Mat4.rotation(t, -1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
+            //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag2 = (Mat4.translation(0, -(t**2), t/2)).times(Mat4.translation(side*6, 0, z-1))
+        let frag2 = (Mat4.translation(t/(this.randArray[3]-1.75), -(t**2), t/this.randArray[4])).times(Mat4.translation(side*6, 0, z-1))
             .times(Mat4.rotation(t, -1, 0, 0))
             .times(Mat4.scale(1, 1, 1));
+            //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag3 = (Mat4.translation(t/2, -(t**2), t/2)).times(Mat4.translation(side*4, 0, z-1))
+        let frag3 = (Mat4.translation(t/this.randArray[5], -(t**2), t/this.randArray[6])).times(Mat4.translation(side*4, 0, z-1))
             .times(Mat4.rotation(t, -1, -1, 1))
             .times(Mat4.scale(1, 1, 1));
+            //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag4 = (Mat4.translation(-t/2, -(t**2), 0)).times(Mat4.translation(side*8, 0, z-3))
+        let frag4 = (Mat4.translation(-t/this.randArray[7], -(t**2), t/(this.randArray[8]-1.75))).times(Mat4.translation(side*8, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, -1))
             .times(Mat4.scale(1, 1, 1));
-      
-        let frag5 = (Mat4.translation(0, -(t**2), 0)).times(Mat4.translation(side*6, 0, z-3))
-            //.times(Mat4.rotation(t, this.rand1, this.rand2, this.rand3))
-            .times(Mat4.scale(1, 1, 1));
+            //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag6 = (Mat4.translation(t/2, -(t**2), 0)).times(Mat4.translation(side*4, 0, z-3))
+        let frag5 = (Mat4.translation(t/(this.randArray[9]-1.75), -(t**2), t/(this.randArray[10]-1.75))).times(Mat4.translation(side*6, 0, z-3))
+            .times(Mat4.rotation(t, this.rand1, this.rand2, this.rand3))
+            .times(Mat4.scale(1, 1, 1))
+
+        let frag6 = (Mat4.translation(t/this.randArray[11], -(t**2), t/(this.randArray[12]-1.75))).times(Mat4.translation(side*4, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, 1))
-            .times(Mat4.scale(1, 1, 1));
+            .times(Mat4.scale(1, 1, 1))
+            //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag7 = (Mat4.translation(-t/2, -(t**2), -t/2)).times(Mat4.translation(side*8, 0, z-5))
+        let frag7 = (Mat4.translation(-t/this.randArray[13], -(t**2), -t/this.randArray[14])).times(Mat4.translation(side*8, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, -1))
-            .times(Mat4.scale(1, 1, 1));
+            .times(Mat4.scale(1, 1, 1))
+            //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag8 = (Mat4.translation(0, -(t**2), -t/2)).times(Mat4.translation(side*6, 0, z-5))
+        let frag8 = (Mat4.translation(t/(this.randArray[15]-1.75), -(t**2), -t/this.randArray[16])).times(Mat4.translation(side*6, 0, z-5))
             .times(Mat4.rotation(t, 1, 0, 0))
-            .times(Mat4.scale(1, 1, 1));
+            .times(Mat4.scale(1, 1, 1))
+            //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag9 = (Mat4.translation(t/2, -(t**2), -t/2)).times(Mat4.translation(side*4, 0, z-5))
+        let frag9 = (Mat4.translation(t/this.randArray[17], -(t**2), -t/this.randArray[18])).times(Mat4.translation(side*4, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, 1))
-            .times(Mat4.scale(1, 1, 1));
+            .times(Mat4.scale(1, 1, 1))
+            //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
+
             
         this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
         this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic);
