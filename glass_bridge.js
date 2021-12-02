@@ -140,44 +140,45 @@ export class GlassBridge extends Base_Scene {
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
-
+        
+        this.randArr = []
 //         console.log("this.random_number : " + this.random_number);
     }
 
     shatter(z, side, context, program_state, t) {
-        let frag1 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-1))
+        let frag1 = (Mat4.translation(-t/2,-(t**2), t2)).times(Mat4.translation(side*8, 0, z-1))
             .times(Mat4.rotation(t, -1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
         
-        let frag2 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-1))
+        let frag2 = (Mat4.translation(0, -(t**2), t/2)).times(Mat4.translation(side*6, 0, z-1))
             .times(Mat4.rotation(t, -1, 0, 0))
             .times(Mat4.scale(1, 1, 1));
 
-        let frag3 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-1))
+        let frag3 = (Mat4.translation(t/2, -(t**2), t/2)).times(Mat4.translation(side*4, 0, z-1))
             .times(Mat4.rotation(t, -1, -1, 1))
             .times(Mat4.scale(1, 1, 1));
 
-        let frag4 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-3))
+        let frag4 = (Mat4.translation(-t/2, -(t**2), 0)).times(Mat4.translation(side*8, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, -1))
             .times(Mat4.scale(1, 1, 1));
       
-        let frag5 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-4))
-            //.times(Mat4.rotation(t, 1, 1, -1))
+        let frag5 = (Mat4.translation(0, -(t**2), 0)).times(Mat4.translation(side*6, 0, z-3))
+            //.times(Mat4.rotation(t, this.rand1, this.rand2, this.rand3))
             .times(Mat4.scale(1, 1, 1));
 
-        let frag6 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-4))
+        let frag6 = (Mat4.translation(t/2, -(t**2), 0)).times(Mat4.translation(side*4, 0, z-3))
             .times(Mat4.rotation(t, 0, 0, 1))
             .times(Mat4.scale(1, 1, 1));
 
-        let frag7 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-6))
+        let frag7 = (Mat4.translation(-t/2, -(t**2), -t/2)).times(Mat4.translation(side*8, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
         
-        let frag8 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*6, 0, z-6))
+        let frag8 = (Mat4.translation(0, -(t**2), -t/2)).times(Mat4.translation(side*6, 0, z-5))
             .times(Mat4.rotation(t, 1, 0, 0))
             .times(Mat4.scale(1, 1, 1));
 
-        let frag9 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*4, 0, z-6))
+        let frag9 = (Mat4.translation(t/2, -(t**2), -t/2)).times(Mat4.translation(side*4, 0, z-5))
             .times(Mat4.rotation(t, 1, 1, 1))
             .times(Mat4.scale(1, 1, 1));
             
