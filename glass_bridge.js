@@ -5,6 +5,10 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
 } = tiny;
 
+
+const glass_width = 6;
+const{ Axis_Arrows } = defs
+
 class Cube extends Shape {
     constructor() {
         super("position", "normal",);
@@ -74,7 +78,8 @@ class Base_Scene extends Scene {
             'sphere' : new defs.Subdivision_Sphere(4),
             'cube': new Cube(),
             'outline': new Cube_Outline(),
-            'strip' : new Cube_Single_Strip()
+            'strip' : new Cube_Single_Strip(),
+            'axis' : new Axis_Arrows(),
         };
 
         // *** Materials
@@ -117,6 +122,7 @@ export class GlassBridge extends Base_Scene {
      * This gives you a very small code sandbox for editing a simple scene, and for
      * experimenting with matrix transformations.
      */
+
     constructor(){
         super();
         this.go_left();
@@ -136,6 +142,16 @@ export class GlassBridge extends Base_Scene {
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
 
 //         console.log("this.random_number : " + this.random_number);
+    }
+
+    shatter(z, side, context, program_state, t) {
+        let frag1 = (Mat4.translation(0,0,0)).times(Mat4.translation(side*8, 0, z-1))
+            .times(Mat4.translation(-1, -1, 1))
+            .times(Mat4.rotation(t, -1, -1, -1))
+            .times(Mat4.translation(1, 1, -1))
+            .times(Mat4.scale(1, 1, 1));
+        
+        this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
     }
 
     go_left() {
@@ -276,6 +292,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     display(context, program_state) {
+        const t = program_state.animation_time/1000
         super.display(context, program_state);
         const bridge_frame_color = hex_color("#F700FF");
 
@@ -289,7 +306,9 @@ export class GlassBridge extends Base_Scene {
         this.draw_bridge(context, program_state, frame_transform, bridge_frame_color);
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
-        this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
-        this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
+        //this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
+        //this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
+        this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
+        this.shatter(0, -1, context, program_state, t);
     }
 }
