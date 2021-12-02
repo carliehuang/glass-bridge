@@ -98,7 +98,7 @@ class Base_Scene extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(0, -10, -30));
+            program_state.set_camera(this.camera_location);
 //             program_state.set_camera(this.initial_camera_location);
         }
         program_state.projection_transform = Mat4.perspective(
@@ -130,6 +130,13 @@ export class GlassBridge extends Base_Scene {
         this.random_number = Number((Math.random() * Math.pow(10, this.num_glasses)));
         this.lives = 10;
         this.checkpoint = 10;
+        this.ypos = 0;
+        this.yvel = 0;
+        this.grav = 0.7;
+        this.height = 0;
+        this.bouncestart = false;
+        this.lightup = false;
+        this.camera_location = Mat4.identity().times(Mat4.translation(0, -10, -30));
 //         this.glass_color = hex_color("#C6F7FF", 0.8);
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
@@ -139,30 +146,36 @@ export class GlassBridge extends Base_Scene {
     }
 
     go_left() {
-        this.inmotion = true;
+        if(this.inmotion){
+            return;
+        }
         if(!this.ball_transform){
             return;
         }
+        this.inmotion = true;
         if(this.lastmotion == "none"){
             this.ball_transform = this.ball_transform.times(Mat4.translation(-3.5, 0, -4));
             this.lastmotion = "left";
         }
         else if(this.lastmotion == "left"){
-            console.log("in left");
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
         else{
             this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, -6));
             this.lastmotion = "left";
         }
+        this.bounce();
         this.stepstaken += 1;
     }
 
     go_right(){
-        this.inmotion = true;
+        if(this.inmotion){
+            return;
+        }
         if(!this.ball_transform){
             return;
         }
+        this.inmotion = true;
         if(this.lastmotion == "none"){
             this.ball_transform = this.ball_transform.times(Mat4.translation(3.5, 0, -4));
             this.lastmotion = "right";
@@ -174,7 +187,41 @@ export class GlassBridge extends Base_Scene {
         else{
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
+        this.bounce();
+        this.inmotion = true;
         this.stepstaken += 1;
+    }
+
+    bounce(){
+        if(!this.ball_transform){
+            return;
+        }
+        if(!this.bouncestart){
+            this.ypos = 0;
+            this.yvel = 4;
+            this.bouncestart = true;
+            this.height = 4;
+        }
+        this.yvel -= this.grav;
+        this.ypos += this.yvel;
+        if(this.ypos <= 0){
+            if(this.height == 4){
+                this.lightup = true;
+            }
+            this.height = this.height/1.75;
+            this.yvel = this.height;
+            this.ypos = this.height;
+            if(this.height <= 0.02){
+                this.yvel = 0;
+                this.height = 0;
+                this.ypos = 0;
+                this.bouncestart = false;
+                this.inmotion = false;
+            }
+            else{
+                this.ypos = this.height;
+            }
+        }
     }
 
     make_control_panel() {
@@ -251,7 +298,7 @@ export class GlassBridge extends Base_Scene {
                 color_index++;
                 this.change_glass_color();
             }
-            console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
+            //console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
             if(ith_digit_int % 2 == 0){
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
@@ -290,6 +337,19 @@ export class GlassBridge extends Base_Scene {
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
         this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
-        this.shapes.sphere.draw(context, program_state, this.ball_transform, this.materials.sphere);
+        let ball_transform_dynamic = this.ball_transform;
+        //console.log("ypos: " + this.ypos);
+        //console.log("yvel: " + this.yvel);
+        if(this.ypos !== 0){
+            ball_transform_dynamic = ball_transform_dynamic.times(Mat4.translation(0, this.ypos, 0));
+            this.bounce();
+        }
+        this.shapes.sphere.draw(context, program_state, ball_transform_dynamic, this.materials.sphere);
+        let desired = this.camera_location;
+        if(this.inmotion){
+            desired = desired.times(Mat4.translation(0, 0, 0.3));
+            this.camera_location = desired;
+        }
+        program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
     }
 }
