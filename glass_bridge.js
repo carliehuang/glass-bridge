@@ -261,22 +261,22 @@ export class GlassBridge extends Base_Scene {
             this.lastmotion = "left";
         }
 
-        console.log("this.posIndex : " + this.posIndex);
-        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
+
         if(this.isTemperedGlass[this.posIndex] == -1){
-            this.bounce();
-            this.inmotion = false;
             this.isOnTemperedGlass = true;
         }else{
-            this.fallThrough();
-            this.inmotion = false;
             this.isOnTemperedGlass = false;
         }
-        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+
         if(!this.isOnTemperedGlass){
+            this.inmotion = false;
+            this.fallThrough();
             this.lives--;
+        }else{
+            this.inmotion = false;
+            this.bounce();
         }
-        this.bounce();
+//         this.bounce();
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
@@ -303,23 +303,21 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
 
-
-        console.log("this.posIndex : " + this.posIndex);
-        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
         if(this.isTemperedGlass[this.posIndex] == 1){
-            this.inmotion = false;
-            this.bounce();
             this.isOnTemperedGlass = true;
         }else{
-            this.inmotion = false;
-            this.fallThrough();
             this.isOnTemperedGlass = false;
         }
-        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+
         if(!this.isOnTemperedGlass){
+            this.inmotion = false;
+            this.fallThrough();
             this.lives--;
+        }else{
+            this.inmotion = false;
+            this.bounce();
         }
-        this.bounce();
+//         this.bounce();
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
@@ -327,6 +325,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     bounce(){
+        console.log("bounce");
         if(!this.ball_transform){
             return;
         }
@@ -359,6 +358,18 @@ export class GlassBridge extends Base_Scene {
     }
 
     fallThrough(){
+        console.log("fallThrough");
+        if(!this.ball_transform){
+            return;
+        }
+        if(!this.fallStart){
+            this.ypos = 0;
+            this.yvel = 4;
+            this.fallStart = true;
+            this.height = 4;
+        }
+        this.yvel -= this.grav;
+        this.ypos += this.yvel;
         return;
     }
 
