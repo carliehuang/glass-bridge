@@ -148,6 +148,9 @@ export class GlassBridge extends Base_Scene {
         
 
         this.ballPos = []; // keeps track of ith jump: -1 if left, 1 if right, 0 if not jumped yet
+        this.posIndex = 0;
+        this.isTemperedGlass = [];
+        this.isOnTemperedGlass = true;
 
         // Random number generation
         this.randArr = [];
@@ -162,6 +165,7 @@ export class GlassBridge extends Base_Scene {
         this.rand1 = Math.random();
         this.rand2 = Math.random();
         this.rand3 = Math.random();
+        
 
     }
 
@@ -169,7 +173,7 @@ export class GlassBridge extends Base_Scene {
     // z = z pos of front end of panel
     // side = -1 for left, 1 for right
         
-        console.log(z, side);
+        //console.log(z, side);
         t *= 0.5;
         let frag1 = (Mat4.translation(-t*this.randArr[0], -(t**2), t*this.randArr[1]))
             .times(Mat4.translation(side*8, 0, z-1))
@@ -256,9 +260,24 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, -6));
             this.lastmotion = "left";
         }
+
+        console.log("this.posIndex : " + this.posIndex);
+        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
+        if(this.isTemperedGlass[this.posIndex] == -1){
+            this.bounce();
+            this.inmotion = false;
+            this.isOnTemperedGlass = true;
+        }else{
+            this.fallThrough();
+            this.inmotion = false;
+            this.isOnTemperedGlass = false;
+        }
+        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
         this.bounce();
+        //this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
+        this.posIndex++;
     }
 
     go_right(){
@@ -280,10 +299,25 @@ export class GlassBridge extends Base_Scene {
         else{
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
+
+
+        console.log("this.posIndex : " + this.posIndex);
+        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
+        if(this.isTemperedGlass[this.posIndex] == 1){
+            this.inmotion = false;
+            this.bounce();
+            this.isOnTemperedGlass = true;
+        }else{
+            this.inmotion = false;
+            this.fallThrough();
+            this.isOnTemperedGlass = false;
+        }
+        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
         this.bounce();
-        this.inmotion = true;
+        //this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
+        this.posIndex++;
     }
 
     bounce(){
@@ -318,6 +352,10 @@ export class GlassBridge extends Base_Scene {
         }
     }
 
+    fallThrough(){
+        return;
+    }
+
     make_control_panel() {
         // Left and right movement
         this.key_triggered_button("Go left", ["n"], this.go_left);
@@ -344,7 +382,6 @@ export class GlassBridge extends Base_Scene {
 
 
     draw_bridge(context, program_state, frame_transform, frame_color, t){
-        
         let scale_factor = 1000;
         let glass_width = 6;
 //         const glass_color = hex_color("#C6F7FF", 0.8);
@@ -396,18 +433,23 @@ export class GlassBridge extends Base_Scene {
             //console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
             if(ith_digit_int % 2 == 0){
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
-                
+                this.isTemperedGlass.push(-1);
                 if(this.ballPos[i] == null || this.ballPos[i] != 1) {
+                    //this.isOnTemperedGlass = true;
                     this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
+                    //this.isOnTemperedGlass = false;
+                    //console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
                     this.shatter(this.stepstaken*9+1, 1, context, program_state, t);
                 }
-
             }else { // reg. glass on left
-
+                this.isTemperedGlass.push(1);
                 if(this.ballPos[i] == null || this.ballPos[i] != -1) {
+                    //this.isOnTemperedGlass = true;
                     this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
+                    //this.isOnTemperedGlass = false;
+                    //console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
                     this.shatter(/*(this.stepstaken-1)*9+1*/0, -1, context, program_state, t);
                 }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
