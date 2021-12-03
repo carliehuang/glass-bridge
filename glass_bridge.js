@@ -273,8 +273,11 @@ export class GlassBridge extends Base_Scene {
             this.isOnTemperedGlass = false;
         }
         console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+        if(!this.isOnTemperedGlass){
+            this.lives--;
+        }
         this.bounce();
-        //this.inmotion = true;
+        this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
         this.posIndex++;
@@ -313,8 +316,11 @@ export class GlassBridge extends Base_Scene {
             this.isOnTemperedGlass = false;
         }
         console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+        if(!this.isOnTemperedGlass){
+            this.lives--;
+        }
         this.bounce();
-        //this.inmotion = true;
+        this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
         this.posIndex++;
