@@ -1,3 +1,7 @@
 #gameover{
     display: none;
 }
+
+#timediv{
+    display: none;
+}

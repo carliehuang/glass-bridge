@@ -139,6 +139,7 @@ export class GlassBridge extends Base_Scene {
         this.grav = 0.7;
         this.height = 0;
         this.bouncestart = false;
+        this.fallStart = false;
         this.lightup = false;
         this.time_left = 0;
         this.gameover = false;
@@ -147,16 +148,23 @@ export class GlassBridge extends Base_Scene {
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
         this.glass_color_list = [hex_color("#C6F7FF", 0.8)];
         this.tempered_glass_color_list = [hex_color("#60A8C1", 0.8)];
+        this.offset = 0;
         
 
         this.ballPos = []; // keeps track of ith jump: -1 if left, 1 if right, 0 if not jumped yet
+        
+        this.shatterArgs = []; // holds shatter() arguments for persistence: z, side, time, color
+        this.ps; // program_state
+
+        this.posIndex = 0;
+        this.isTemperedGlass = [];
+        this.isOnTemperedGlass = true;
 
         // Random number generation
         this.randArr = [];
         for (let i = 0; i < 18; i++) {
             this.randArr.push(getRandomArbitrary(.3, 2));
         }
-
         this.randSign = [];
         for (let i = 0; i < 8; i++) {
             this.randSign.push(Math.random() < 0.5 ? -1 : 1);
@@ -164,78 +172,77 @@ export class GlassBridge extends Base_Scene {
         this.rand1 = Math.random();
         this.rand2 = Math.random();
         this.rand3 = Math.random();
-
+        
+        this.doneRespawning = false;
     }
 
-    shatter(z, side, context, program_state, t) {
+    shatter(z, side, context, program_state, t0, col) {
     // z = z pos of front end of panel
     // side = -1 for left, 1 for right
-        
-        console.log(z, side);
-        t *= 0.5;
-        let frag1 = (Mat4.translation(-t*this.randArr[0], -(t**2), t*this.randArr[1]))
+    
+        let frag1 = (Mat4.translation(side*t0*this.randArr[0], -(t0**2), t0*this.randArr[1]))
             .times(Mat4.translation(side*8, 0, z-1))
-            .times(Mat4.rotation(t, -1, 1, -1))
+            .times(Mat4.rotation(t0, -1, 1, -1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag2 = (Mat4.translation(this.randArr[2]*this.randSign[0], -(t**2), t*this.randArr[3]))
+        let frag2 = (Mat4.translation(t0*this.randArr[2]*this.randSign[0], -(t0**2), t0*this.randArr[3]))
             .times(Mat4.translation(side*6, 0, z-1))
-            .times(Mat4.rotation(t, -1, 0, 0))
+            .times(Mat4.rotation(t0, -1, 0, 0))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag3 = (Mat4.translation(t*this.randArr[4], -(t**2), t*this.randArr[5]))
+        let frag3 = (Mat4.translation(-side*t0*this.randArr[4], -(t0**2), t0*this.randArr[5]))
             .times(Mat4.translation(side*4, 0, z-1))
-            .times(Mat4.rotation(t, -1, -1, 1))
+            .times(Mat4.rotation(t0, -1, -1, 1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag4 = (Mat4.translation(-t*this.randArr[6], -(t**2), this.randArr[7]*this.randSign[1]))
+        let frag4 = (Mat4.translation(side*t0*this.randArr[6], -(t0**2), t0*this.randArr[7]*this.randSign[1]))
             .times(Mat4.translation(side*8, 0, z-3))
-            .times(Mat4.rotation(t, 0, 0, -1))
+            .times(Mat4.rotation(t0, 0, 0, -1))
             .times(Mat4.scale(1, 1, 1));
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag5 = (Mat4.translation(this.randArr[8]*this.randSign[2], -(t**2), this.randArr[9]*this.randSign[3]))
+        let frag5 = (Mat4.translation(t0*this.randArr[8]*this.randSign[2], -(t0**2), t0*this.randArr[9]*this.randSign[3]))
             .times(Mat4.translation(side*6, 0, z-3))
-            .times(Mat4.rotation(t, this.rand1, this.rand2, this.rand3))
+            .times(Mat4.rotation(t0, this.rand1, this.rand2, this.rand3))
             .times(Mat4.scale(1, 1, 1))
 
-        let frag6 = (Mat4.translation(t*this.randArr[10], -(t**2), this.randArr[11]*this.randSign[4]))
+        let frag6 = (Mat4.translation(-side*t0*this.randArr[10], -(t0**2), t0*this.randArr[11]*this.randSign[4]))
             .times(Mat4.translation(side*4, 0, z-3))
-            .times(Mat4.rotation(t, 0, 0, 1))
+            .times(Mat4.rotation(t0, 0, 0, 1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));            
 
-        let frag7 = (Mat4.translation(-t*this.randArr[12], -(t**2), -t*this.randArr[13]))
+        let frag7 = (Mat4.translation(side*t0*this.randArr[12], -(t0**2), -t0*this.randArr[13]))
             .times(Mat4.translation(side*8, 0, z-5))
-            .times(Mat4.rotation(t, 1, 1, -1))
+            .times(Mat4.rotation(t0, 1, 1, -1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
         
-        let frag8 = (Mat4.translation(this.randArr[14]*this.randSign[5], -(t**2), -t*this.randArr[15]))
+        let frag8 = (Mat4.translation(t0*this.randArr[14]*this.randSign[5], -(t0**2), -t0*this.randArr[15]))
             .times(Mat4.translation(side*6, 0, z-5))
-            .times(Mat4.rotation(t, 1, 0, 0))
+            .times(Mat4.rotation(t0, 1, 0, 0))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, .3, 0], [0, 1, .3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
 
-        let frag9 = (Mat4.translation(t*this.randArr[16], -(t**2), -t*this.randArr[17]))
+        let frag9 = (Mat4.translation(-side*t0*this.randArr[16], -(t0**2), -t0*this.randArr[17]))
             .times(Mat4.translation(side*4, 0, z-5))
-            .times(Mat4.rotation(t, 1, 1, 1))
+            .times(Mat4.rotation(t0, 1, 1, 1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
+       
 
-        
-        this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag4, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag4, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic.override({color:col}));
          
     }
 
@@ -258,9 +265,42 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, -6));
             this.lastmotion = "left";
         }
-        this.bounce();
+
+
+        if(this.isTemperedGlass[this.posIndex] == -1){
+            this.isOnTemperedGlass = true;
+        }else{
+            this.isOnTemperedGlass = false;
+            this.doneRespawning = false;
+        }
+
+        if(!this.isOnTemperedGlass){
+            //this.inmotion = false;
+            this.fallThrough();
+            this.lives--;
+            if(this.lives == 0){
+                this.gameover = true;
+            }
+        }else{
+            this.inmotion = false;
+            this.bounce();
+        }
+//         this.bounce();
+        this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
+        if(this.isTemperedGlass == -1) {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.tempered_glass_color_list[Math.floor(this.stepstaken/10)]]);
+        } else {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.glass_color_list[Math.floor(this.stepstaken/10)]]);
+        }
+        this.posIndex++;
     }
 
     go_right(){
@@ -282,13 +322,46 @@ export class GlassBridge extends Base_Scene {
         else{
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
-        this.bounce();
+
+        if(this.isTemperedGlass[this.posIndex] == 1){
+            this.isOnTemperedGlass = true;
+        }else{
+            this.isOnTemperedGlass = false;
+            this.doneRespawning = false;
+        }
+
+        if(!this.isOnTemperedGlass){
+            //this.inmotion = false;
+            this.fallThrough();
+            this.lives--;
+            if(this.lives == 0){
+                this.gameover = true;
+            }
+        }else{
+            this.inmotion = false;
+            this.bounce();
+        }
+//         this.bounce();
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
+
+        if(this.isTemperedGlass == 1) {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.tempered_glass_color_list[Math.floor(this.stepstaken/10)]]);
+        } else {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.glass_color_list[Math.floor(this.stepstaken/10)]]);
+        }
+        this.posIndex++;
     }
 
     bounce(){
+        console.log("bounce");
         if(!this.ball_transform){
             return;
         }
@@ -317,6 +390,49 @@ export class GlassBridge extends Base_Scene {
             else{
                 this.ypos = this.height;
             }
+        }
+    }
+
+    fallThrough(){
+        console.log("fallThrough");
+        if(!this.ball_transform){
+            return;
+        }
+        if(!this.fallStart){
+            this.ypos = 0;
+            this.yvel = 4;
+            this.fallStart = true;
+            this.height = 4;
+        }
+        //this.inmotion = false;
+        this.yvel -= this.grav;
+        this.ypos += this.yvel;
+        if(this.ypos < -600){
+
+            this.ypos = 0;
+            this.inmotion = false;
+            this.fallStart = false;
+            this.respawn();
+        }
+
+        return;
+    }
+
+    respawn() {
+        console.log("In respawn")
+        if (this.isOnTemperedGlass == false) {
+            console.log("here")
+            if (this.lastmotion == "left"){
+                this.ball_transform = this.ball_transform.times(Mat4.translation(7, 0, 0));
+                this.lastmotion = "right";
+            }
+            else if (this.lastmotion == "right") {
+                this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, 0));
+                this.lastmotion = "left";
+            }
+            this.bounce();
+            this.isOnTemperedGlass = true;
+            this.doneRespawning = true;
         }
     }
 
@@ -349,7 +465,6 @@ export class GlassBridge extends Base_Scene {
 
 
     draw_bridge(context, program_state, frame_transform, frame_color, t){
-        
         let scale_factor = 1000;
         let glass_width = 6;
 //         const glass_color = hex_color("#C6F7FF", 0.8);
@@ -401,19 +516,26 @@ export class GlassBridge extends Base_Scene {
             //console.log("i : " + i + " ith_digit_int : " + ith_digit_int);
             if(ith_digit_int % 2 == 0){
                 this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
-                
-                if(this.ballPos[i] == null || this.ballPos[i] != 1) {
+                this.isTemperedGlass.push(-1);
+                if(this.ballPos[i] == null || this.ballPos[i] != 1) { // reg. glass on right
                     this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
-                    this.shatter(this.stepstaken*9+1, 1, context, program_state, t);
+                    
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], 
+                                context, program_state, t-this.shatterArgs[i][2],
+                                this.shatterArgs[i][3]);
+
                 }
-
             }else { // reg. glass on left
-
+                this.isTemperedGlass.push(1);
                 if(this.ballPos[i] == null || this.ballPos[i] != -1) {
+                    //this.isOnTemperedGlass = true;
                     this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
-                    this.shatter(/*(this.stepstaken-1)*9+1*/0, -1, context, program_state, t);
+                    
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], 
+                                 context, program_state, t-this.shatterArgs[i][2],
+                                 this.shatterArgs[i][3]);
                 }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
@@ -434,18 +556,35 @@ export class GlassBridge extends Base_Scene {
     }
 
     display(context, program_state) {
+        this.ps = program_state;
         const t = program_state.animation_time/1000;
-        console.log(Math.floor(t));
-        this.time_left = 60 - Math.floor(t);
-        if(this.time_left <= 0){
+        //console.log(Math.floor(t));
+        if(this.lastmotion == "none"){
+            this.offset = Math.floor(t);
+        }
+        else{
+            document.getElementById("start").style.display = "none";
+            document.getElementById("title").style.display = "none";
+            document.getElementById("title").style.display = "none";
+        }
+        this.time_left = 60 - Math.floor(t) + this.offset;
+        if(this.lastmotion != "none"){
+            document.getElementById("start").style.display = "none";
+            document.getElementById("title").style.display = "none";
+            document.getElementById("timediv").style.display = "block";
+            document.getElementById("time").innerHTML = this.time_left;
+        }
+        if(this.time_left <= 0 || this.gameover){
             this.time_left = 0;
             this.gameover = true;
+            document.getElementById("timediv").style.display = "none";
             document.getElementById("gameover").style.display = "block";
             document.getElementById("steps").innerHTML = this.stepstaken + " steps";
             document.getElementById("lives").innerHTML = this.lives + " lives";
             document.getElementById("score").innerHTML = this.stepstaken*this.lives;
             return;
         }
+        const dt = program_state.delta_time/1000;
         super.display(context, program_state);
         const bridge_frame_color = hex_color("#F700FF");
 
@@ -456,7 +595,7 @@ export class GlassBridge extends Base_Scene {
 
         //program_state.set_camera(this.initial_camera_location);
 
-        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, t);
+        this.draw_bridge(context, program_state, frame_transform, bridge_frame_color, t, dt);
         let platform_transform = Mat4.identity();
         platform_transform = platform_transform.times(Mat4.translation(0, 0, 11)).times(Mat4.scale(11, 1, 11));
         this.shapes.cube.draw(context, program_state, platform_transform, this.materials.plastic.override({color: hex_color("#FFD700")}));
@@ -465,18 +604,31 @@ export class GlassBridge extends Base_Scene {
         //console.log("yvel: " + this.yvel);
         if(this.ypos !== 0){
             ball_transform_dynamic = ball_transform_dynamic.times(Mat4.translation(0, this.ypos, 0));
-            this.bounce();
+            if(this.isOnTemperedGlass){
+                this.bounce();
+            }else{
+                this.fallThrough();
+            }
+
         }
+
+        
         this.shapes.sphere.draw(context, program_state, ball_transform_dynamic, this.materials.sphere);
         let desired = this.camera_location;
         if(this.inmotion){
-            desired = desired.times(Mat4.translation(0, 0, 0.3));
+            if(this.fallStart){
+                desired = desired.times(Mat4.translation(0, 0, 0.2));
+            }
+            else{
+                desired = desired.times(Mat4.translation(0, 0, 0.3));
+            }
             this.camera_location = desired;
+        }
+        if (this.doneRespawning == false) {
+            //this.respawn();
         }
         program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
-      
-        //this.shatter(0, -1, context, program_state, t);
     }
 
 }
