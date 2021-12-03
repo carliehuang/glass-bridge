@@ -562,14 +562,8 @@ export class GlassBridge extends Base_Scene {
         if(this.lastmotion == "none"){
             this.offset = Math.floor(t);
         }
-        else{
-            document.getElementById("start").style.display = "none";
-            document.getElementById("title").style.display = "none";
-            document.getElementById("title").style.display = "none";
-        }
         this.time_left = 60 - Math.floor(t) + this.offset;
         if(this.lastmotion != "none"){
-            document.getElementById("start").style.display = "none";
             document.getElementById("title").style.display = "none";
             document.getElementById("timediv").style.display = "block";
             document.getElementById("time").innerHTML = this.time_left;
