@@ -272,7 +272,7 @@ export class GlassBridge extends Base_Scene {
         }
 
         if(!this.isOnTemperedGlass){
-            this.inmotion = false;
+            //this.inmotion = false;
             this.fallThrough();
             this.lives--;
         }else{
@@ -325,7 +325,7 @@ export class GlassBridge extends Base_Scene {
         }
 
         if(!this.isOnTemperedGlass){
-            this.inmotion = false;
+            //this.inmotion = false;
             this.fallThrough();
             this.lives--;
         }else{
@@ -398,7 +398,7 @@ export class GlassBridge extends Base_Scene {
         //this.inmotion = false;
         this.yvel -= this.grav;
         this.ypos += this.yvel;
-        if(this.ypos < -100){
+        if(this.ypos < -235){
 
             this.ypos = 0;
             this.inmotion = false;
