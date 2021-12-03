@@ -373,9 +373,15 @@ export class GlassBridge extends Base_Scene {
             this.fallStart = true;
             this.height = 4;
         }
-        this.inmotion = false;
+        //this.inmotion = false;
         this.yvel -= this.grav;
         this.ypos += this.yvel;
+        if(this.ypos < -100){
+            this.ypos = 0;
+            this.inmotion = false;
+            this.fallStart = false;
+        }
+
         return;
     }
 
@@ -512,13 +518,16 @@ export class GlassBridge extends Base_Scene {
         let ball_transform_dynamic = this.ball_transform;
         //console.log("ypos: " + this.ypos);
         //console.log("yvel: " + this.yvel);
-        if(this.ypos !== 0 && this.isOnTemperedGlass){
+        if(this.ypos !== 0){
             ball_transform_dynamic = ball_transform_dynamic.times(Mat4.translation(0, this.ypos, 0));
-            //this.bounce();
+            if(this.isOnTemperedGlass){
+                this.bounce();
+            }else{
+                this.fallThrough();
+            }
+
         }
-        if(this.ypos != 0){
-            this.bounce();
-        }
+
         
         this.shapes.sphere.draw(context, program_state, ball_transform_dynamic, this.materials.sphere);
         let desired = this.camera_location;
