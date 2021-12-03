@@ -379,9 +379,11 @@ export class GlassBridge extends Base_Scene {
         this.yvel -= this.grav;
         this.ypos += this.yvel;
         if(this.ypos < -100){
+
             this.ypos = 0;
             this.inmotion = false;
             this.fallStart = false;
+            this.respawn();
         }
 
         return;
@@ -556,7 +558,7 @@ export class GlassBridge extends Base_Scene {
             this.camera_location = desired;
         }
         if (this.doneRespawning == false) {
-            this.respawn();
+            //this.respawn();
         }
         program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
