@@ -150,8 +150,7 @@ export class GlassBridge extends Base_Scene {
 
         this.ballPos = []; // keeps track of ith jump: -1 if left, 1 if right, 0 if not jumped yet
         
-        this.shatterArgs = []; // holds shatter() arguments for persistence: z, side, time
-        //this.t_start = []; // holds start time values for shatter()
+        this.shatterArgs = []; // holds shatter() arguments for persistence: z, side, time, color
         this.ps; // program_state
 
         this.posIndex = 0;
@@ -174,7 +173,7 @@ export class GlassBridge extends Base_Scene {
         this.doneRespawning = false;
     }
 
-    shatter(z, side, context, program_state, t0) {
+    shatter(z, side, context, program_state, t0, col) {
     // z = z pos of front end of panel
     // side = -1 for left, 1 for right
     
@@ -230,17 +229,17 @@ export class GlassBridge extends Base_Scene {
             .times(Mat4.rotation(t0, 1, 1, 1))
             .times(Mat4.scale(1, 1, 1))
             //.times(Matrix.of([1, 0, -.3, 0], [0, 1, -.3, 0], [0, 0, 1, 0], [0, 0, 0, 1]));
+       
 
-        
-        this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag4, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic);
-        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic);
+        this.shapes.cube.draw(context, program_state, frag1, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag2, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag3, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag4, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag5, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag6, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag7, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag8, this.materials.plastic.override({color:col}));
+        this.shapes.cube.draw(context, program_state, frag9, this.materials.plastic.override({color:col}));
          
     }
 
@@ -284,7 +283,17 @@ export class GlassBridge extends Base_Scene {
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
-        this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, this.isTemperedGlass[this.stepstaken-1] ,this.ps.animation_time/1000]);
+        if(this.isTemperedGlass == -1) {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.tempered_glass_color_list[Math.floor(this.stepstaken/10)]]);
+        } else {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.glass_color_list[Math.floor(this.stepstaken/10)]]);
+        }
         this.posIndex++;
     }
 
@@ -327,7 +336,18 @@ export class GlassBridge extends Base_Scene {
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
-        this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, this.isTemperedGlass[this.stepstaken-1] ,this.ps.animation_time/1000]);
+
+        if(this.isTemperedGlass == 1) {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.tempered_glass_color_list[Math.floor(this.stepstaken/10)]]);
+        } else {
+            this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, 
+                                    this.isTemperedGlass[this.stepstaken-1],
+                                    this.ps.animation_time/1000,
+                                    this.glass_color_list[Math.floor(this.stepstaken/10)]]);
+        }
         this.posIndex++;
     }
 
@@ -489,7 +509,9 @@ export class GlassBridge extends Base_Scene {
                     this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
                     
-                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], context, program_state, t-this.shatterArgs[i][2]);
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], 
+                                context, program_state, t-this.shatterArgs[i][2],
+                                this.shatterArgs[i][3]);
 
                 }
             }else { // reg. glass on left
@@ -499,7 +521,9 @@ export class GlassBridge extends Base_Scene {
                     this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
                     
-                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], context, program_state, t-this.shatterArgs[i][2]);
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], 
+                                 context, program_state, t-this.shatterArgs[i][2],
+                                 this.shatterArgs[i][3]);
                 }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
