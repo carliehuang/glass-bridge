@@ -139,6 +139,7 @@ export class GlassBridge extends Base_Scene {
         this.grav = 0.7;
         this.height = 0;
         this.bouncestart = false;
+        this.fallStart = false;
         this.lightup = false;
         this.camera_location = Mat4.identity().times(Mat4.translation(0, -10, -30));
 //         this.glass_color = hex_color("#C6F7FF", 0.8);
@@ -374,6 +375,7 @@ export class GlassBridge extends Base_Scene {
             this.fallStart = true;
             this.height = 4;
         }
+        this.inmotion = false;
         this.yvel -= this.grav;
         this.ypos += this.yvel;
         return;
@@ -512,10 +514,14 @@ export class GlassBridge extends Base_Scene {
         let ball_transform_dynamic = this.ball_transform;
         //console.log("ypos: " + this.ypos);
         //console.log("yvel: " + this.yvel);
-        if(this.ypos !== 0){
+        if(this.ypos !== 0 && this.isOnTemperedGlass){
             ball_transform_dynamic = ball_transform_dynamic.times(Mat4.translation(0, this.ypos, 0));
+            //this.bounce();
+        }
+        if(this.ypos != 0){
             this.bounce();
         }
+        
         this.shapes.sphere.draw(context, program_state, ball_transform_dynamic, this.materials.sphere);
         let desired = this.camera_location;
         if(this.inmotion){
@@ -524,7 +530,6 @@ export class GlassBridge extends Base_Scene {
         }
         program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
-      
-            }
+    }
 
 }
