@@ -139,6 +139,7 @@ export class GlassBridge extends Base_Scene {
         this.grav = 0.7;
         this.height = 0;
         this.bouncestart = false;
+        this.fallStart = false;
         this.lightup = false;
         this.camera_location = Mat4.identity().times(Mat4.translation(0, -10, -30));
 //         this.glass_color = hex_color("#C6F7FF", 0.8);
@@ -148,9 +149,10 @@ export class GlassBridge extends Base_Scene {
         
 
         this.ballPos = []; // keeps track of ith jump: -1 if left, 1 if right, 0 if not jumped yet
-
-        this.t_start = []; // holds start time values for shatter()
-        this.ps;
+        
+        this.shatterArgs = []; // holds shatter() arguments for persistence: z, side, time
+        //this.t_start = []; // holds start time values for shatter()
+        this.ps; // program_state
 
         this.posIndex = 0;
         this.isTemperedGlass = [];
@@ -161,7 +163,6 @@ export class GlassBridge extends Base_Scene {
         for (let i = 0; i < 18; i++) {
             this.randArr.push(getRandomArbitrary(.3, 2));
         }
-
         this.randSign = [];
         for (let i = 0; i < 8; i++) {
             this.randSign.push(Math.random() < 0.5 ? -1 : 1);
@@ -263,27 +264,27 @@ export class GlassBridge extends Base_Scene {
             this.lastmotion = "left";
         }
 
-        console.log("this.posIndex : " + this.posIndex);
-        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
+
         if(this.isTemperedGlass[this.posIndex] == -1){
-            this.bounce();
-            this.inmotion = false;
             this.isOnTemperedGlass = true;
         }else{
-            this.fallThrough();
-            this.inmotion = false;
             this.isOnTemperedGlass = false;
             this.doneRespawning = false;
         }
-        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+
         if(!this.isOnTemperedGlass){
+            this.inmotion = false;
+            this.fallThrough();
             this.lives--;
+        }else{
+            this.inmotion = false;
+            this.bounce();
         }
-        this.bounce();
+//         this.bounce();
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(-1);
-        this.t_start.push(this.ps.animation_time/1000);
+        this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, this.isTemperedGlass[this.stepstaken-1] ,this.ps.animation_time/1000]);
         this.posIndex++;
     }
 
@@ -307,32 +308,31 @@ export class GlassBridge extends Base_Scene {
             this.ball_transform = this.ball_transform.times(Mat4.translation(0, 0, -6));
         }
 
-
-        console.log("this.posIndex : " + this.posIndex);
-        console.log("this.isTemperedGlass[this.posIndex] : " + this.isTemperedGlass[this.posIndex]);
         if(this.isTemperedGlass[this.posIndex] == 1){
-            this.inmotion = false;
-            this.bounce();
             this.isOnTemperedGlass = true;
         }else{
-            this.inmotion = false;
-            this.fallThrough();
             this.isOnTemperedGlass = false;
             this.doneRespawning = false;
         }
-        console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
+
         if(!this.isOnTemperedGlass){
+            this.inmotion = false;
+            this.fallThrough();
             this.lives--;
+        }else{
+            this.inmotion = false;
+            this.bounce();
         }
-        this.bounce();
+//         this.bounce();
         this.inmotion = true;
         this.stepstaken += 1;
         this.ballPos.push(1);
-        this.t_start.push(this.ps.animation_time/1000);
+        this.shatterArgs.push([(this.stepstaken-1)*(-9)+1, this.isTemperedGlass[this.stepstaken-1] ,this.ps.animation_time/1000]);
         this.posIndex++;
     }
 
     bounce(){
+        console.log("bounce");
         if(!this.ball_transform){
             return;
         }
@@ -365,6 +365,19 @@ export class GlassBridge extends Base_Scene {
     }
 
     fallThrough(){
+        console.log("fallThrough");
+        if(!this.ball_transform){
+            return;
+        }
+        if(!this.fallStart){
+            this.ypos = 0;
+            this.yvel = 4;
+            this.fallStart = true;
+            this.height = 4;
+        }
+        this.inmotion = false;
+        this.yvel -= this.grav;
+        this.ypos += this.yvel;
         return;
     }
 
@@ -468,7 +481,7 @@ export class GlassBridge extends Base_Scene {
                     this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
                     
-                    this.shatter((this.stepstaken-1)*(-9)+1, 1, context, program_state, t-this.t_start[i]);
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], context, program_state, t-this.shatterArgs[i][2]);
 
                 }
             }else { // reg. glass on left
@@ -478,7 +491,7 @@ export class GlassBridge extends Base_Scene {
                     this.shapes.cube.draw(context, program_state, left_glass_transform, this.materials.plastic.override({color:this.glass_color_list[color_index]}));
                 } else {
                     
-                    this.shatter((this.stepstaken-1)*(-9)+1, -1, context, program_state, t-this.t_start[i]);
+                    this.shatter(this.shatterArgs[i][0], -this.shatterArgs[i][1], context, program_state, t-this.shatterArgs[i][2]);
                 }
                 this.shapes.cube.draw(context, program_state, right_glass_transform, this.materials.plastic.override({color:this.tempered_glass_color_list[color_index]}));
             }
@@ -519,10 +532,14 @@ export class GlassBridge extends Base_Scene {
         let ball_transform_dynamic = this.ball_transform;
         //console.log("ypos: " + this.ypos);
         //console.log("yvel: " + this.yvel);
-        if(this.ypos !== 0){
+        if(this.ypos !== 0 && this.isOnTemperedGlass){
             ball_transform_dynamic = ball_transform_dynamic.times(Mat4.translation(0, this.ypos, 0));
+            //this.bounce();
+        }
+        if(this.ypos != 0){
             this.bounce();
         }
+        
         this.shapes.sphere.draw(context, program_state, ball_transform_dynamic, this.materials.sphere);
         let desired = this.camera_location;
         if(this.inmotion){
@@ -534,7 +551,6 @@ export class GlassBridge extends Base_Scene {
         }
         program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
-      
-        }
+    }
 
 }
