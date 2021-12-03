@@ -5,13 +5,27 @@
 <html lang="En">
 <head>
     <meta charset="UTF-8"/>
+    
     <link href="assets/fav.ico" rel="icon">
     <title>Glass Bridge</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+    <script>
+    document.styleSheets[0] = "style.css";
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
 </head>
 <body style="background: White">
+
 <!-- Begin typing your web page here. -->
 <!-- The following code embeds a WebGL canvas panel, loads certain scene(s), and displays panel(s) of their controls.-->
-<div class="canvas-widget" id="main-canvas"></div>
+<div class="canvas-widget" id="main-canvas" style="position: relative;"></div>
+<div id="gameover" style="text-align: center; color: white; position: absolute; left: 39vw; top: 30vh; font-family: 'Press Start 2P', cursive;">
+<p style="font-size: 30px;">GAME OVER</p>
+<p><span id="steps"></span> x <span id="lives"></span></p>
+<p>Total Score: <span id="score"></span></p>
+</div>
 <script type=module>
     // ********************* THE ENTRY POINT OF YOUR WHOLE PROGRAM STARTS HERE *********************
     // Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:

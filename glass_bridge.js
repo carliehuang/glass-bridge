@@ -140,6 +140,8 @@ export class GlassBridge extends Base_Scene {
         this.height = 0;
         this.bouncestart = false;
         this.lightup = false;
+        this.time_left = 0;
+        this.gameover = false;
         this.camera_location = Mat4.identity().times(Mat4.translation(0, -10, -30));
 //         this.glass_color = hex_color("#C6F7FF", 0.8);
 //         this.tempered_glass_color = hex_color("#60A8C1", 0.8);
@@ -238,7 +240,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     go_left() {
-        if(this.inmotion){
+        if(this.inmotion || this.gameover){
             return;
         }
         if(!this.ball_transform){
@@ -262,7 +264,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     go_right(){
-        if(this.inmotion){
+        if(this.inmotion || this.gameover){
             return;
         }
         if(!this.ball_transform){
@@ -328,6 +330,9 @@ export class GlassBridge extends Base_Scene {
         this.new_line();
 
         this.live_string(steps => steps.textContent = "steps: " + this.stepstaken);
+        this.new_line();
+
+        this.live_string(time => time.textContent = "time: " + this.time_left);
 
 
         /*
@@ -430,6 +435,17 @@ export class GlassBridge extends Base_Scene {
 
     display(context, program_state) {
         const t = program_state.animation_time/1000;
+        console.log(Math.floor(t));
+        this.time_left = 60 - Math.floor(t);
+        if(this.time_left <= 0){
+            this.time_left = 0;
+            this.gameover = true;
+            document.getElementById("gameover").style.display = "block";
+            document.getElementById("steps").innerHTML = this.stepstaken + " steps";
+            document.getElementById("lives").innerHTML = this.lives + " lives";
+            document.getElementById("score").innerHTML = this.stepstaken*this.lives;
+            return;
+        }
         super.display(context, program_state);
         const bridge_frame_color = hex_color("#F700FF");
 
