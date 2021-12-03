@@ -526,7 +526,7 @@ export class GlassBridge extends Base_Scene {
             desired = desired.times(Mat4.translation(0, 0, 0.3));
             this.camera_location = desired;
         }
-        //program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
+        program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
     }
 
