@@ -173,7 +173,7 @@ export class GlassBridge extends Base_Scene {
         this.rand2 = Math.random();
         this.rand3 = Math.random();
         
-        this.doneRespawning = false;
+        this.doneRespawning = true;
     }
 
     shatter(z, side, context, program_state, t0, col) {
@@ -247,7 +247,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     go_left() {
-        if(this.inmotion || this.gameover){
+        if(this.inmotion || this.gameover || !this.doneRespawning){
             return;
         }
         if(!this.ball_transform){
@@ -304,7 +304,7 @@ export class GlassBridge extends Base_Scene {
     }
 
     go_right(){
-        if(this.inmotion || this.gameover){
+        if(this.inmotion || this.gameover || !this.doneRespawning){
             return;
         }
         if(!this.ball_transform){
@@ -386,6 +386,7 @@ export class GlassBridge extends Base_Scene {
                 this.ypos = 0;
                 this.bouncestart = false;
                 this.inmotion = false;
+                this.doneRespawning = true;
             }
             else{
                 this.ypos = this.height;
@@ -432,7 +433,6 @@ export class GlassBridge extends Base_Scene {
             }
             this.bounce();
             this.isOnTemperedGlass = true;
-            this.doneRespawning = true;
         }
     }
 
