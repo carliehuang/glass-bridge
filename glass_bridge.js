@@ -170,14 +170,12 @@ export class GlassBridge extends Base_Scene {
         this.rand2 = Math.random();
         this.rand3 = Math.random();
         
-
+        this.doneRespawning = false;
     }
 
     shatter(z, side, context, program_state, t0) {
     // z = z pos of front end of panel
     // side = -1 for left, 1 for right
-        
-
     
         let frag1 = (Mat4.translation(side*t0*this.randArr[0], -(t0**2), t0*this.randArr[1]))
             .times(Mat4.translation(side*8, 0, z-1))
@@ -275,6 +273,7 @@ export class GlassBridge extends Base_Scene {
             this.fallThrough();
             this.inmotion = false;
             this.isOnTemperedGlass = false;
+            this.doneRespawning = false;
         }
         console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
         if(!this.isOnTemperedGlass){
@@ -319,6 +318,7 @@ export class GlassBridge extends Base_Scene {
             this.inmotion = false;
             this.fallThrough();
             this.isOnTemperedGlass = false;
+            this.doneRespawning = false;
         }
         console.log("isOnTemperedGlass ? : " + this.isOnTemperedGlass);
         if(!this.isOnTemperedGlass){
@@ -366,6 +366,24 @@ export class GlassBridge extends Base_Scene {
 
     fallThrough(){
         return;
+    }
+
+    respawn() {
+        console.log("In respawn")
+        if (this.isOnTemperedGlass == false) {
+            console.log("here")
+            if (this.lastmotion == "left"){
+                this.ball_transform = this.ball_transform.times(Mat4.translation(7, 0, 0));
+                this.lastmotion = "right";
+            }
+            else if (this.lastmotion == "right") {
+                this.ball_transform = this.ball_transform.times(Mat4.translation(-7, 0, 0));
+                this.lastmotion = "left";
+            }
+            this.bounce();
+            this.isOnTemperedGlass = true;
+            this.doneRespawning = true;
+        }
     }
 
     make_control_panel() {
@@ -511,9 +529,12 @@ export class GlassBridge extends Base_Scene {
             desired = desired.times(Mat4.translation(0, 0, 0.3));
             this.camera_location = desired;
         }
+        if (this.doneRespawning == false) {
+            this.respawn();
+        }
         program_state.set_camera(desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
         this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.plastic);
       
-            }
+        }
 
 }
